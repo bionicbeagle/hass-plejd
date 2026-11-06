@@ -201,7 +201,10 @@ class PlejdSite:
 
     async def update_blacklist(self) -> None:
         data = self.config_entry.data.copy()
-        data["blacklist"] = self.blacklist
+        # Store a snapshot, not the live set: self.blacklist is changed in
+        # place, so storing it would make the next update compare equal to
+        # the current entry data and never be saved.
+        data["blacklist"] = sorted(self.blacklist)
         self.hass.config_entries.async_update_entry(self.config_entry, data=data)
         await self.manager.set_blacklist(self.blacklist)
 
