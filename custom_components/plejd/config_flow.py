@@ -111,9 +111,10 @@ class PlejdConfigFlow(ConfigFlow, domain=DOMAIN):
                 }
             )
 
+            # Keep the rest of the entry data, e.g. the gateway blacklist
             self.hass.config_entries.async_update_entry(
                 self.reauth_config_entry,
-                data=self.config,
+                data={**self.reauth_config_entry.data, **self.config},
             )
             await self.hass.config_entries.async_reload(
                 self.reauth_config_entry.entry_id
