@@ -1,5 +1,6 @@
 """Diagnostic support for Plejd."""
 
+import copy
 from typing import TypeVar
 from pyplejd import PlejdManager
 from homeassistant.config_entries import ConfigEntry
@@ -85,4 +86,8 @@ async def async_get_config_entry_diagnostics(
     site: PlejdSite = get_plejd_site_from_config_entry(hass, config_entry)
     plejdManager: PlejdManager = site.manager
     sitedata = await plejdManager.get_raw_sitedata()
-    return redact(sitedata, REDACT_KEYS)
+    if sitedata is None:
+        return {}
+    # get_raw_sitedata() returns the copy pyplejd keeps, which is also what
+    # gets saved as the offline cache - redact a copy, never the original.
+    return redact(copy.deepcopy(sitedata), REDACT_KEYS)
