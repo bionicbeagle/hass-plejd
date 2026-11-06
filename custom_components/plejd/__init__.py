@@ -88,13 +88,17 @@ async def async_remove_config_entry_device(
     device_entry: DeviceEntry,
 ) -> bool:
     """Allow removing a Plejd device if orphaned."""
-    site: PlejdSite = hass.data[DOMAIN][config_entry.entry_id]
+    site: PlejdSite | None = hass.data.get(DOMAIN, {}).get(config_entry.entry_id)
     if not site:
         return True
     for device in site.devices:
         if device.hidden:
             continue
-        if device.identifier in device_entry.identifiers:
+        # Registry identifiers are (DOMAIN, device_identifier), see
+        # plejd_entity.device_info(). Scenes have no device of their own.
+        if not (device_identifier := getattr(device, "device_identifier", None)):
+            continue
+        if (DOMAIN, device_identifier) in device_entry.identifiers:
             return False
 
     return True
