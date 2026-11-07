@@ -154,12 +154,11 @@ def migrate_device_registry(
         if not (ble_mac := getattr(device, "ble_mac", None)):
             continue
         connection = (dr.CONNECTION_BLUETOOTH, ble_mac)
-        owner = registry.async_get_device(connections={connection})
+        # Scoped to our config entry - connections are only unique per entry
+        owner = registry.async_get_device_by_connection(connection, config_entry_id)
         if owner is None:
             continue
         if (DOMAIN, device.device_identifier) in owner.identifiers:
-            continue
-        if config_entry_id not in owner.config_entries:
             continue
         _LOGGER.info(
             "Moving Bluetooth connection %s from device '%s' to the primary device '%s'",
